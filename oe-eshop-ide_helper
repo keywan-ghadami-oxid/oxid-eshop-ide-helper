@@ -20,20 +20,28 @@
  * @copyright (C) OXID eSales AG 2003-2016
  */
 
-$projectRoot = dirname(dirname(dirname(dirname(__FILE__))));
-require_once $projectRoot . '/source/bootstrap.php';
+define('INSTALLATION_ROOT_PATH', dirname(dirname(dirname(dirname(__FILE__)))));
+define('VENDOR_PATH', INSTALLATION_ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR);
+define('OX_BASE_PATH', INSTALLATION_ROOT_PATH . DIRECTORY_SEPARATOR . 'source' . DIRECTORY_SEPARATOR);
 
-/** moduleAutoload must be unregistered, as it would trigger a database connection, which may be not yet available */
-$moduleAutoload = \OxidEsales\EshopCommunity\Core\Autoload\ModuleAutoload::class ;
-spl_autoload_unregister([$moduleAutoload, 'autoload']);
+//Where CORE_AUTOLOADER_PATH points depends in if the shop is installed as compilation or not.
+if (!is_dir(OX_BASE_PATH . 'Core')) {
+    //we need this in case of compilation installation
+    define('CORE_AUTOLOADER_PATH', VENDOR_PATH . 'oxid-esales' . DIRECTORY_SEPARATOR . 'oxideshop-ce' . DIRECTORY_SEPARATOR .
+        'source' . DIRECTORY_SEPARATOR . 'Core' . DIRECTORY_SEPARATOR . 'Autoload' . DIRECTORY_SEPARATOR);
+} else {
+    define('CORE_AUTOLOADER_PATH', OX_BASE_PATH . 'Core' . DIRECTORY_SEPARATOR . 'Autoload' . DIRECTORY_SEPARATOR );
+}
+
+require_once VENDOR_PATH . 'autoload.php';
+require_once CORE_AUTOLOADER_PATH . 'AliasAutoload.php';
 
 // TODO remove this line after auto loading via composer works
 require_once 'src/Generator.php';
 
-$generator = new OxidEsales\EshopIdeHelper\Generator($projectRoot);
+$generator = new OxidEsales\EshopIdeHelper\Generator(INSTALLATION_ROOT_PATH);
 try {
     $generator->generate();
 } catch (\Exception $exception) {
     print $exception->getTraceAsString();
 }
-

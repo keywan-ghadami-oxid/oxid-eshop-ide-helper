@@ -21,7 +21,6 @@
 
 namespace OxidEsales\EshopIdeHelper;
 
-use OxidEsales\Eshop\Core\Edition\EditionSelector;
 use ReflectionClass;
 use ReflectionException;
 
@@ -113,9 +112,6 @@ class Generator
                                          'oxserial',];
 
 
-    /** @var null|EditionSelector An instance of the edition selector */
-    private $editionSelector = null;
-
     /** @var null|string The path to the project root directory */
     private $projectRootDirectory = null;
 
@@ -126,8 +122,6 @@ class Generator
      */
     public function __construct($projectRootDirectory)
     {
-        $this->editionSelector = new EditionSelector();
-
         $this->projectRootDirectory = $projectRootDirectory;
     }
 
@@ -137,17 +131,17 @@ class Generator
     public function generate()
     {
         $output = '';
-        $edition = $this->getEdition();
 
-        if ($edition == \OxidEsales\Eshop\Core\Edition\EditionSelector::COMMUNITY) {
+        if (class_exists(\OxidEsales\EshopCommunity\Core\Autoload\VirtualNameSpaceClassMap::class)) {
             $classMap = $this->getMapCommunity();
             $output = $this->generateIdeHelperOutput($classMap);
         }
-        if ($edition == \OxidEsales\Eshop\Core\Edition\EditionSelector::PROFESSIONAL) {
+
+        if (class_exists(\OxidEsales\EshopProfessional\Core\Autoload\VirtualNameSpaceClassMap::class)) {
             $classMap = $this->getMapProfessional();
             $output = $this->generateIdeHelperOutput($classMap);
         }
-        if ($edition == \OxidEsales\Eshop\Core\Edition\EditionSelector::ENTERPRISE) {
+        if (class_exists(\OxidEsales\EshopEnterprise\Core\Autoload\VirtualNameSpaceClassMap::class)) {
             $classMap = $this->getMapEnterprise();
             $output = $this->generateIdeHelperOutput($classMap);
         }
@@ -234,16 +228,6 @@ class Generator
             return;
         }
         echo 'Warning ' . $exception->getMessage() . PHP_EOL;
-    }
-
-    /**
-     * Return the currently installed edition of OXID eSales eShop
-     *
-     * @return string
-     */
-    protected function getEdition()
-    {
-        return $this->editionSelector->getEdition();
     }
 
     /**
